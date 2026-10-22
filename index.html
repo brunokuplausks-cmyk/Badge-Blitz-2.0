@@ -1,0 +1,938 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Badge Blitz — Football Quiz</title>
+<style>
+:root {
+  --site-primary: #19d6a0;
+  --site-secondary: #18242c;
+  --site-background: #0d1419;
+  --site-on-primary: #071510;
+  --site-on-secondary: #f4f7f8;
+  --site-on-background: #f4f7f8;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  color-scheme: light dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--site-background); color: var(--site-on-background); font-family: var(--site-font-body); }
+#app { min-height: 100vh; width: 100%; border-radius: 0; background: light-dark(#f3f6f5, var(--site-background)); color: light-dark(#15211f, var(--site-on-background)); overflow: hidden; position: relative; }
+#app::before { content:""; position:absolute; width:520px; height:520px; border-radius:50%; right:-170px; top:-240px; background:radial-gradient(circle, color-mix(in srgb, var(--site-primary) 16%, transparent), transparent 68%); opacity:var(--site-decoration-opacity); pointer-events:none; }
+.shell { max-width: 900px; margin: 0 auto; padding: calc(16px * var(--site-spacing-scale)) calc(14px * var(--site-spacing-scale)) 22px; position:relative; }
+.topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+.brand { display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:-.04em; font-size:22px; }
+.brand-mark { width:38px; height:38px; display:grid; place-items:center; border-radius:12px; background:var(--site-primary); color:var(--site-on-primary); font-size:21px; }
+.pill { border:1px solid light-dark(#d7e0dd,#29373e); border-radius:999px; padding:6px 10px; font-size:10px; font-weight:750; letter-spacing:.08em; text-transform:uppercase; color:light-dark(#596864,#a9b8b6); }
+.hero { display:grid; grid-template-columns:1fr auto; align-items:end; gap:12px; margin-bottom:12px; }
+.eyebrow { display:none; color:light-dark(#168563,#57e3b4); font-size:12px; font-weight:850; letter-spacing:.17em; text-transform:uppercase; margin-bottom:12px; }
+h1 { margin:0; font-family:var(--site-font-heading); font-size:clamp(32px,7vw,58px); line-height:.94; letter-spacing:-.075em; font-weight:950; }
+.hero p { display:none; color:light-dark(#64716e,#a9b8b6); margin:15px 0 0; max-width:550px; font-size:15px; line-height:1.55; }
+.best { text-align:right; padding-bottom:4px; }
+.best span { display:block; color:light-dark(#75827e,#a9b8b6); text-transform:uppercase; letter-spacing:.12em; font-size:11px; font-weight:800; }
+.best strong { font-size:30px; letter-spacing:-.05em; }
+.game-card { background:light-dark(#fff,#131d23); border:1px solid light-dark(#dce5e2,#27363d); border-radius:16px; padding:clamp(10px,2vw,20px); box-shadow:0 18px 55px rgba(0,0,0,.08); }
+.toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.modes { display:flex; gap:6px; padding:5px; background:light-dark(#edf2f0,#0c1419); border-radius:14px; flex-wrap:wrap; }
+.mode { border:0; border-radius:10px; background:transparent; color:light-dark(#65716e,#9aa9a7); padding:10px 13px; font-size:12px; font-weight:800; cursor:pointer; transition:.15s; }
+.mode.active { background:var(--site-primary); color:var(--site-on-primary); box-shadow:0 3px 10px rgba(25,214,160,.2); }
+.league { display:flex; align-items:center; gap:8px; color:light-dark(#6c7975,#9aa9a7); font-size:12px; font-weight:700; }
+select { border:1px solid light-dark(#d9e3df,#304149); border-radius:10px; padding:9px 12px; background:light-dark(#fff,#18242c); color:inherit; font:inherit; font-size:12px; outline-offset:3px; }
+.play-layout { display:grid; grid-template-columns:minmax(0,1fr) 150px; gap:10px; }
+.pre-game-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+.pre-game-controls .stat-card { min-width:0; }
+.pre-game-controls .stat-value { font-size:25px; margin-top:3px; }
+.pre-game-controls .stat-caption { font-size:11px; }
+.pre-game-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; grid-column:1 / -1; }
+.pre-game-actions .primary-btn,.pre-game-actions .secondary-btn { min-height:48px; }
+.timer-card { display:block; }
+.question-panel { min-width:0; }
+.question-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; }
+.question-label { font-size:11px; color:light-dark(#82908b,#829390); font-weight:850; text-transform:uppercase; letter-spacing:.14em; }
+.progress-label { font-size:12px; color:light-dark(#71807b,#9eafaa); font-weight:750; }
+
+/* Badge appears directly on the page without a surrounding window */
+.badge-stage {
+  min-height:0;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  position:relative;
+  overflow:visible;
+  padding:8px 0;
+}
+.badge-stage::after { display:none; }
+.crest {
+  width:clamp(150px,32vw,230px);
+  height:clamp(150px,32vw,230px);
+  position:relative;
+  z-index:1;
+  overflow:visible;
+  filter:drop-shadow(0 8px 8px rgba(0,0,0,.10));
+  transition:transform .2s ease;
+}
+#crest img {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.badge-stage.pop .crest { animation:pop .32s ease; }
+@keyframes pop { 50% { transform:scale(1.07) rotate(-2deg); } }
+
+.answers { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
+.answer { border:1px solid light-dark(#dce5e1,#304149); background:light-dark(#fff,#18242c); border-radius:12px; min-height:64px; display:flex; align-items:center; gap:10px; padding:13px; text-align:left; color:inherit; font:inherit; cursor:pointer; transition:border-color .15s,background .15s,transform .15s; }
+.answer:hover:not(:disabled) { border-color:var(--site-primary); transform:translateY(-1px); }
+.answer:focus-visible,.primary-btn:focus-visible,.mode:focus-visible { outline:3px solid var(--site-primary); outline-offset:3px; }
+.key { width:27px; height:27px; flex:0 0 27px; display:grid; place-items:center; border-radius:8px; background:light-dark(#edf2f0,#25343b); color:light-dark(#62716c,#aebbb7); font-size:11px; font-weight:900; }
+.answer-name { font-size:15px; font-weight:800; line-height:1.3; }
+.answer.correct { border-color:#16b981; background:light-dark(#e5fbf1,#123b2e); }
+.answer.correct .key { background:#16b981; color:#06251a; }
+.answer.wrong { border-color:#f06464; background:light-dark(#fff0f0,#3a2023); }
+.answer.wrong .key { background:#f06464; color:#2a0a0a; }
+.answer:disabled { cursor:default; }
+.side-panel { display:flex; flex-direction:column; gap:7px; }
+.stat-card { border:1px solid light-dark(#e0e8e5,#29383f); border-radius:12px; padding:10px; background:light-dark(#f8faf9,#17232a); }
+.stat-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11px; color:light-dark(#71807b,#9eafaa); text-transform:uppercase; letter-spacing:.11em; font-weight:850; }
+.timer { font-size:clamp(25px,4vw,38px); font-weight:950; letter-spacing:-.07em; line-height:1.15; margin:7px 0 9px; font-variant-numeric:tabular-nums; }
+.timer.urgent { color:#f06464; }
+.timer-bar { height:6px; border-radius:999px; overflow:hidden; background:light-dark(#e1e9e5,#2b3b42); }
+.timer-fill { height:100%; width:100%; border-radius:999px; background:var(--site-primary); transition:width .25s linear,background .2s; }
+.stat-value { font-size:33px; font-weight:950; letter-spacing:-.06em; margin-top:8px; }
+.stat-caption { font-size:12px; color:light-dark(#7b8984,#93a39e); margin-top:2px; }
+.primary-btn { width:100%; border:0; border-radius:13px; background:var(--site-primary); color:var(--site-on-primary); font:inherit; font-weight:900; font-size:14px; padding:15px 18px; cursor:pointer; transition:filter .15s,transform .15s; }
+.primary-btn:hover { filter:brightness(1.04); transform:translateY(-1px); }
+.secondary-btn { width:100%; border:1px solid light-dark(#dce5e1,#304149); border-radius:13px; background:transparent; color:inherit; font:inherit; font-weight:800; font-size:13px; padding:13px 18px; cursor:pointer; }
+.feedback { min-height:24px; padding-top:12px; font-size:13px; font-weight:800; color:light-dark(#6c7975,#9eafaa); }
+.feedback.good { color:#16a777; }
+.feedback.bad { color:#e35e63; }
+.howto { display:none; margin-top:20px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; color:light-dark(#83908b,#829390); font-size:12px; }
+.howto strong { color:light-dark(#4f5e59,#bdc9c5); }
+kbd { font:inherit; font-size:11px; font-weight:800; padding:3px 6px; border:1px solid light-dark(#d7e0dc,#35454c); border-radius:5px; background:light-dark(#fff,#18242c); }
+.overlay { display:none; position:absolute; inset:0; background:light-dark(rgba(243,246,245,.9),rgba(7,13,17,.88)); backdrop-filter:blur(8px); z-index:5; align-items:center; justify-content:center; padding:20px; border-radius:24px; }
+.overlay.show { display:flex; }
+.result-box { width:min(100%,360px); text-align:center; padding:30px 24px; border:1px solid light-dark(#dce5e1,#304149); border-radius:22px; background:light-dark(#fff,#17232a); box-shadow:0 24px 60px rgba(0,0,0,.15); }
+.result-icon { font-size:40px; margin-bottom:12px; }
+.result-box h2 { margin:0; font-size:34px; letter-spacing:-.06em; }
+.result-box p { color:light-dark(#6f7d78,#9eafaa); line-height:1.5; font-size:14px; }
+.result-score { font-size:58px; font-weight:950; letter-spacing:-.07em; margin:10px 0; color:light-dark(#15211f,var(--site-primary)); }
+.footer-note { display:none; text-align:center; font-size:11px; color:light-dark(#9aa5a1,#62716e); margin-top:22px; }
+
+@media (max-width:760px) {
+  .shell { padding:10px 8px 14px; }
+  .topbar { margin-bottom:12px; }
+  .brand { font-size:18px; gap:8px; }
+  .brand-mark { width:32px; height:32px; font-size:18px; border-radius:9px; }
+  .hero { grid-template-columns:1fr auto; align-items:center; margin-bottom:10px; }
+  h1 { font-size:clamp(30px,8vw,42px); }
+  .best { text-align:right; display:block; padding:0; }
+  .best span { font-size:8px; letter-spacing:.07em; }
+  .best strong { font-size:22px; }
+  .play-layout { grid-template-columns:minmax(0,1fr); gap:7px; }
+  .side-panel { display:none; }
+  .pre-game-controls { gap:6px; margin-bottom:9px; }
+  .pre-game-controls .stat-card { padding:9px; border-radius:10px; }
+  .pre-game-controls .stat-head { font-size:9px; letter-spacing:.04em; }
+  .pre-game-controls .stat-value { font-size:25px; }
+  .pre-game-actions .primary-btn,.pre-game-actions .secondary-btn { padding:12px 8px; font-size:12px; }
+  .badge-stage { min-height:0; padding:6px 0; }
+  .crest { width:clamp(140px,42vw,210px); height:clamp(140px,42vw,210px); }
+  .question-label { font-size:9px; letter-spacing:.06em; }
+  .progress-label { font-size:10px; }
+}
+@media (max-width:430px) {
+  .shell { padding-left:6px; padding-right:6px; }
+  .pill { font-size:9px; padding:5px 7px; }
+  .game-card { padding:7px; border-radius:12px; }
+  .answers { gap:7px; margin-top:8px; }
+  .answer { padding:10px 8px; min-height:60px; gap:6px; }
+  .answer-name { font-size:12px; overflow-wrap:anywhere; }
+  .key { width:23px; height:23px; flex-basis:23px; font-size:10px; border-radius:6px; }
+  .stat-card { padding:7px; }
+  .pre-game-controls .stat-head { font-size:8px; }
+  .pre-game-controls .stat-value { font-size:22px; }
+  .pre-game-actions .primary-btn,.pre-game-actions .secondary-btn { padding:11px 5px; font-size:11px; }
+}
+</style>
+</head>
+<body>
+<div id="app" data-sites-preview-theme="custom">
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">⚽</div><span>BADGE BLITZ</span></div>
+      <div class="pill">60 seconds</div>
+    </header>
+    <section class="hero">
+      <div><div class="eyebrow">How well do you know football?</div><h1>NAME THAT<br>BADGE.</h1><p>One badge. Four choices. Sixty seconds. How many clubs and national teams can you identify before the final whistle?</p></div>
+      <div class="best"><span>Best this session</span><strong id="bestScore">—</strong></div>
+    </section>
+    <section class="game-card">
+      <div class="toolbar">
+        <div class="modes" role="group" aria-label="Quiz type">
+          <button class="mode" data-mode="clubs">Club badges</button>
+          <button class="mode" data-mode="nations">National teams</button>
+          <button class="mode active" data-mode="mixed">Mixed game</button>
+        </div>
+        <label class="league">League <select id="leagueFilter" aria-label="League filter"><option value="all">All leagues + extra clubs</option><option value="Premier League">Premier League</option><option value="La Liga">La Liga</option><option value="Bundesliga">Bundesliga</option><option value="Serie A">Serie A</option><option value="Ligue 1">Ligue 1</option><option value="Other clubs">Other clubs</option></select></label>
+      </div>
+      <div class="pre-game-controls" aria-label="Game status and controls">
+        <div class="stat-card"><div class="stat-head"><span>Score</span><span>✓</span></div><div class="stat-value" id="score">0</div><div class="stat-caption">points scored</div></div>
+        <div class="stat-card"><div class="stat-head"><span>Correct in a row</span><span>✦</span></div><div class="stat-value" id="streak">0</div><div class="stat-caption">consecutive correct answers</div></div>
+        <div class="pre-game-actions"><button class="primary-btn" id="startBtn">Start game ↗</button><button class="secondary-btn" id="resetBtn">Reset round</button></div>
+      </div>
+      <div class="play-layout">
+        <div class="question-panel">
+          <div class="question-head"><div class="question-label" id="roundLabel">Name that badge</div><div class="progress-label">Question <span id="questionNum">—</span></div></div>
+          <div class="badge-stage" id="badgeStage"><div class="crest" id="crest"></div></div>
+          <div class="answers" id="answers" aria-label="Answer choices">
+            <button class="answer" disabled><span class="key">1</span><span class="answer-name">Ready when you are</span></button>
+            <button class="answer" disabled><span class="key">2</span><span class="answer-name">Four options</span></button>
+            <button class="answer" disabled><span class="key">3</span><span class="answer-name">One correct answer</span></button>
+            <button class="answer" disabled><span class="key">4</span><span class="answer-name">Beat the clock</span></button>
+          </div>
+          <div class="feedback" id="feedback" aria-live="polite">Ready?</div>
+        </div>
+        <aside class="side-panel">
+          <div class="stat-card timer-card"><div class="stat-head"><span>Time remaining</span><span>⏱</span></div><div class="timer" id="timer">01:00</div><div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div></div>
+        </aside>
+      </div>
+      <div class="howto"><span><strong>Quick tip:</strong> trust your first instinct.</span><span>Keyboard: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> to answer</span></div>
+      <div class="overlay" id="overlay"><div class="result-box"><div class="result-icon">🏁</div><h2>Full time!</h2><p>You scored</p><div class="result-score" id="finalScore">0</div><p id="resultCopy">Can you beat your score?</p><button class="primary-btn" id="playAgain">Play again ↗</button></div></div>
+    </section>
+    <div class="footer-note">Prototype game · Badge artwork is stylized placeholder art, not official club or federation logos.</div>
+  </main>
+</div>
+<script>
+const clubs = [
+ {name:'Celta Vigo',league:'La Liga',c:['#8fd3f4','#ffffff','#d9273e'],style:'shield',motif:'cross'},
+ {name:'FC Porto',league:'Other clubs',c:['#0050a4','#ffffff','#d9b45d'],style:'round',motif:'cross'},
+ {name:'Manchester United',league:'Premier League',c:['#da291c','#fbe122','#111111'],style:'shield',motif:'cross'},
+ {name:'Zenit Saint Petersburg',league:'Other clubs',c:['#009fe3','#ffffff','#092c78'],style:'round',motif:'diagonal'},
+ {name:'Brighton and Hove Albion',league:'Premier League',c:['#0057b8','#ffffff','#f2c94c'],style:'round',motif:'bird'},
+ {name:'Barcelona',league:'La Liga',c:['#004d98','#a50044','#edbb00'],style:'shield',motif:'bars'},
+ {name:'Borussia Dortmund',league:'Bundesliga',c:['#fde100','#111111','#ffffff'],style:'round',motif:'bars'},
+ {name:'CSKA Moscow',league:'Other clubs',c:['#d71920','#003f8f','#ffffff'],style:'shield',motif:'cross'},
+ {name:'Real Madrid',league:'La Liga',c:['#ffffff','#17479e','#d4af37'],style:'round',motif:'diagonal'},
+ {name:'Mainz 05',league:'Bundesliga',c:['#c8102e','#ffffff','#e0b42c'],style:'shield',motif:'bars'},
+ {name:'Manchester City',league:'Premier League',c:['#6cabdd','#ffffff','#1c2c5b'],style:'round',motif:'stripes'},
+ {name:'Marseille',league:'Ligue 1',c:['#ffffff','#00a3d9','#1b315e'],style:'round',motif:'star'},
+ {name:'Monaco',league:'Ligue 1',c:['#e21b36','#ffffff','#c5a25d'],style:'shield',motif:'diagonal'},
+ {name:'Napoli',league:'Serie A',c:['#12a0d7','#ffffff','#123d70'],style:'round',motif:'star'},
+ {name:'Newcastle United',league:'Premier League',c:['#111111','#ffffff','#3b8b5b'],style:'shield',motif:'stripes'},
+ {name:'Paris Saint-Germain',league:'Ligue 1',c:['#004170','#ed1c24','#ffffff'],style:'round',motif:'tower'},
+ {name:'RB Leipzig',league:'Bundesliga',c:['#ffffff','#d5001c','#1b1b1b'],style:'shield',motif:'stripes'},
+ {name:'Real Betis',league:'La Liga',c:['#00954c','#ffffff','#c5a72b'],style:'shield',motif:'stripes'},
+ {name:'Real Sociedad',league:'La Liga',c:['#00529f','#ffffff','#d5a72b'],style:'round',motif:'stripes'},
+ {name:'Rennes',league:'Ligue 1',c:['#111111','#e32219','#ffffff'],style:'shield',motif:'bars'},
+ {name:'Saint-Étienne',league:'Ligue 1',c:['#008b52','#ffffff','#d5a72b'],style:'shield',motif:'star'},
+ {name:'SC Freiburg',league:'Bundesliga',c:['#ffffff','#111111','#e32219'],style:'round',motif:'bird'},
+ {name:'Sevilla',league:'La Liga',c:['#ffffff','#e32219','#111111'],style:'shield',motif:'bars'},
+ {name:'Strasbourg',league:'Ligue 1',c:['#00529f','#e32219','#ffffff'],style:'shield',motif:'stripes'},
+ {name:'Torino',league:'Serie A',c:['#8e1b2f','#ffffff','#d5a72b'],style:'shield',motif:'bull'},
+ {name:'Tottenham Hotspur',league:'Premier League',c:['#ffffff','#132257','#5c91c7'],style:'shield',motif:'star'},
+ {name:'TSG Hoffenheim',league:'Bundesliga',c:['#00529f','#ffffff','#4fa4dc'],style:'shield',motif:'diagonal'},
+ {name:'Valencia',league:'La Liga',c:['#ffffff','#111111','#ed8b00'],style:'shield',motif:'stripes'},
+ {name:'VfB Stuttgart',league:'Bundesliga',c:['#ffffff','#e32219','#111111'],style:'shield',motif:'bars'},
+ {name:'VfL Wolfsburg',league:'Bundesliga',c:['#ffffff','#65b32e','#00542a'],style:'round',motif:'star'},
+ {name:'Villarreal',league:'La Liga',c:['#ffed00','#00529f','#e32219'],style:'shield',motif:'bars'},
+ {name:'West Ham United',league:'Premier League',c:['#7a263a','#80bfff','#f2d16b'],style:'shield',motif:'cross'},
+ {name:'AC Milan',league:'Serie A',c:['#fb090b','#111111','#f4c542'],style:'oval',motif:'stripes'},
+ {name:'Arsenal',league:'Premier League',c:['#db0007','#ffffff','#9c0005'],style:'shield',motif:'bars'},
+ {name:'AS Roma',league:'Serie A',c:['#8e1b2f','#f5c542','#f6f1e8'],style:'shield',motif:'wolf'},
+ {name:'Aston Villa',league:'Premier League',c:['#670e36','#95bfe5','#f7d154'],style:'shield',motif:'star'},
+ {name:'Atalanta',league:'Serie A',c:['#00529f','#111111','#ffffff'],style:'round',motif:'stripes'},
+ {name:'Athletic Club',league:'La Liga',c:['#ee2523','#ffffff','#111111'],style:'shield',motif:'cross'},
+ {name:'Atlético Madrid',league:'La Liga',c:['#cb3524','#ffffff','#272e61'],style:'shield',motif:'stripes'},
+ {name:'Bayern Munich',league:'Bundesliga',c:['#dc052d','#ffffff','#0066b2'],style:'round',motif:'diamonds'},
+ {name:'Borussia Mönchengladbach',league:'Bundesliga',c:['#ffffff','#111111','#00a651'],style:'shield',motif:'diagonal'},
+ {name:'Chelsea',league:'Premier League',c:['#034694','#ffffff','#d7b56d'],style:'round',motif:'star'},
+ {name:'Eintracht Frankfurt',league:'Bundesliga',c:['#e32219','#ffffff','#111111'],style:'shield',motif:'eagle'},
+ {name:'Fiorentina',league:'Serie A',c:['#542583','#ffffff','#d5a72b'],style:'shield',motif:'fleur'},
+ {name:'Genoa',league:'Serie A',c:['#c8102e','#00529f','#ffffff'],style:'shield',motif:'stripes'},
+ {name:'Inter Milan',league:'Serie A',c:['#00529f','#111111','#ffffff'],style:'round',motif:'diagonal'},
+ {name:'Lens',league:'Ligue 1',c:['#e32219','#f4c542','#111111'],style:'shield',motif:'bars'},
+ {name:'Lille',league:'Ligue 1',c:['#e32219','#00529f','#ffffff'],style:'shield',motif:'diagonal'},
+ {name:'Liverpool',league:'Premier League',c:['#c8102e','#f6f1e8','#007a53'],style:'shield',motif:'cross'},
+ {name:'Lyon',league:'Ligue 1',c:['#ffffff','#1b3f8b','#e51d35'],style:'shield',motif:'bars'},
+ {name:'Ajax',league:'Other clubs',c:['#ffffff','#d71920','#111111'],style:'round',motif:'diagonal'},
+ {name:'PSV',league:'Other clubs',c:['#ffffff','#ed1c24','#111111'],style:'shield',motif:'stripes'}
+];
+const nations = [
+ {name:'France',league:'National team',c:['#002395','#ffffff','#ed2939'],style:'shield',motif:'rooster'},
+ {name:'Germany',league:'National team',c:['#111111','#dd0000','#ffce00'],style:'shield',motif:'bars'},
+ {name:'Brazil',league:'National team',c:['#ffdf00','#009739','#002776'],style:'round',motif:'diamond'},
+ {name:'Croatia',league:'National team',c:['#ff0000','#ffffff','#171796'],style:'shield',motif:'checks'},
+ {name:'Italy',league:'National team',c:['#0066b3','#ffffff','#009246'],style:'shield',motif:'stripes'},
+ {name:'Netherlands',league:'National team',c:['#f36c21','#ffffff','#21468b'],style:'shield',motif:'lion'},
+ {name:'England',league:'National team',c:['#ffffff','#ce1124','#1c3767'],style:'shield',motif:'cross'},
+];
+
+// Additional teams supplied in the badges folder.
+clubs.push({name:"Abha",league:"Other clubs"});
+clubs.push({name:"Academico De Viseu",league:"Other clubs"});
+clubs.push({name:"Aek Athens",league:"Other clubs"});
+clubs.push({name:"Agf",league:"Other clubs"});
+clubs.push({name:"Akhmat",league:"Other clubs"});
+clubs.push({name:"Akron",league:"Other clubs"});
+clubs.push({name:"Al Ahli",league:"Other clubs"});
+clubs.push({name:"Al Ettifaq",league:"Other clubs"});
+clubs.push({name:"Al Faisaly Fc",league:"Other clubs"});
+clubs.push({name:"Al Fateh",league:"Other clubs"});
+clubs.push({name:"Al Fayha",league:"Other clubs"});
+clubs.push({name:"Al Hazem",league:"Other clubs"});
+clubs.push({name:"Al Hilal",league:"Other clubs"});
+clubs.push({name:"Al Ittihad",league:"Other clubs"});
+clubs.push({name:"Al Khaleej",league:"Other clubs"});
+clubs.push({name:"Al Kholood",league:"Other clubs"});
+clubs.push({name:"Al Nassr",league:"Other clubs"});
+clubs.push({name:"Al Qadsiah",league:"Other clubs"});
+clubs.push({name:"Al Riyadh",league:"Other clubs"});
+clubs.push({name:"Al Shabab",league:"Other clubs"});
+clubs.push({name:"Al Taawoun",league:"Other clubs"});
+clubs.push({name:"Alverca",league:"Other clubs"});
+clubs.push({name:"Anderlecht",league:"Other clubs"});
+clubs.push({name:"Angers",league:"Other clubs"});
+clubs.push({name:"Ararat Armenia",league:"Other clubs"});
+clubs.push({name:"Arouca",league:"Other clubs"});
+clubs.push({name:"Augsburg",league:"Other clubs"});
+clubs.push({name:"Auxerre",league:"Other clubs"});
+clubs.push({name:"AZ Alkmaar",league:"Other clubs"});
+clubs.push({name:"Baltika",league:"Other clubs"});
+clubs.push({name:"Bayer Leverkusen",league:"Other clubs"});
+clubs.push({name:"Benfica",league:"Other clubs"});
+clubs.push({name:"Besiktas",league:"Other clubs"});
+clubs.push({name:"Birmingham",league:"Other clubs"});
+clubs.push({name:"Blackburn Rovers",league:"Other clubs"});
+clubs.push({name:"Bodo Glimt",league:"Other clubs"});
+clubs.push({name:"Bologna",league:"Other clubs"});
+clubs.push({name:"Bolton",league:"Other clubs"});
+clubs.push({name:"Borac",league:"Other clubs"});
+clubs.push({name:"Bournemouth",league:"Other clubs"});
+clubs.push({name:"Brann",league:"Other clubs"});
+clubs.push({name:"Brentford",league:"Other clubs"});
+clubs.push({name:"Brest",league:"Other clubs"});
+clubs.push({name:"Bristol City",league:"Other clubs"});
+clubs.push({name:"Burnley",league:"Other clubs"});
+clubs.push({name:"Cagliari",league:"Other clubs"});
+clubs.push({name:"Cardiff City",league:"Other clubs"});
+clubs.push({name:"Casa Pia Ac",league:"Other clubs"});
+clubs.push({name:"Celje",league:"Other clubs"});
+clubs.push({name:"Celtic",league:"Other clubs"});
+clubs.push({name:"Charlton",league:"Other clubs"});
+clubs.push({name:"Club Brugge",league:"Other clubs"});
+clubs.push({name:"Como 1907",league:"Other clubs"});
+clubs.push({name:"Copenhagen",league:"Other clubs"});
+clubs.push({name:"Coventry City",league:"Other clubs"});
+clubs.push({name:"Crvena Zvezda",league:"Other clubs"});
+clubs.push({name:"Crystal Palace",league:"Other clubs"});
+clubs.push({name:"Cska Sofia",league:"Other clubs"});
+clubs.push({name:"Deportivo La Coruna",league:"Other clubs"});
+clubs.push({name:"Deportivo",league:"Other clubs"});
+clubs.push({name:"Derby County",league:"Other clubs"});
+clubs.push({name:"Dinamo Zagreb",league:"Other clubs"});
+clubs.push({name:"Diriyah Club",league:"Other clubs"});
+clubs.push({name:"Dynamo Makhachkala",league:"Other clubs"});
+clubs.push({name:"Dynamo Moscow",league:"Other clubs"});
+clubs.push({name:"Egnatia",league:"Other clubs"});
+clubs.push({name:"Elche",league:"Other clubs"});
+clubs.push({name:"Espanyol",league:"Other clubs"});
+clubs.push({name:"Estoril",league:"Other clubs"});
+clubs.push({name:"Estrela Da Amadora",league:"Other clubs"});
+clubs.push({name:"Everton",league:"Other clubs"});
+clubs.push({name:"Fakel",league:"Other clubs"});
+clubs.push({name:"Famalicao",league:"Other clubs"});
+clubs.push({name:"Fenerbahce",league:"Other clubs"});
+clubs.push({name:"Ferencvaros",league:"Other clubs"});
+clubs.push({name:"Feyenoord",league:"Other clubs"});
+clubs.push({name:"Frosinone",league:"Other clubs"});
+clubs.push({name:"Fulham",league:"Other clubs"});
+clubs.push({name:"Galatasaray",league:"Other clubs"});
+clubs.push({name:"Gent",league:"Other clubs"});
+clubs.push({name:"Getafe",league:"Other clubs"});
+clubs.push({name:"Gil Vicente",league:"Other clubs"});
+clubs.push({name:"Hajduk Split",league:"Other clubs"});
+clubs.push({name:"Hamburger Sv",league:"Other clubs"});
+clubs.push({name:"Hapoel Beer Sheva",league:"Other clubs"});
+clubs.push({name:"Hearts",league:"Other clubs"});
+clubs.push({name:"Hull City",league:"Other clubs"});
+clubs.push({name:"Iberia",league:"Other clubs"});
+clubs.push({name:"Inter Escaldes",league:"Other clubs"});
+clubs.push({name:"Ipswich",league:"Other clubs"});
+clubs.push({name:"Jablonec",league:"Other clubs"});
+clubs.push({name:"Jagiellonia",league:"Other clubs"});
+clubs.push({name:"Juventus",league:"Other clubs"});
+clubs.push({name:"Kairat",league:"Other clubs"});
+clubs.push({name:"Kauno Zalgiris",league:"Other clubs"});
+clubs.push({name:"Koln",league:"Other clubs"});
+clubs.push({name:"Krasnodar",league:"Other clubs"});
+clubs.push({name:"Krylya Sovetov",league:"Other clubs"});
+clubs.push({name:"Kups",league:"Other clubs"});
+clubs.push({name:"Lask",league:"Other clubs"});
+clubs.push({name:"Lazio",league:"Other clubs"});
+clubs.push({name:"Le Havre Ac",league:"Other clubs"});
+clubs.push({name:"Le Mans",league:"Other clubs"});
+clubs.push({name:"Lecce",league:"Other clubs"});
+clubs.push({name:"Lech Poznan",league:"Other clubs"});
+clubs.push({name:"Leeds United",league:"Other clubs"});
+clubs.push({name:"Levante",league:"Other clubs"});
+clubs.push({name:"Levski",league:"Other clubs"});
+clubs.push({name:"Lillestrom",league:"Other clubs"});
+clubs.push({name:"Lincoln City",league:"Other clubs"});
+clubs.push({name:"Lincoln Red Imps",league:"Other clubs"});
+clubs.push({name:"Lokomotiv Moskva",league:"Other clubs"});
+clubs.push({name:"Lorient",league:"Other clubs"});
+clubs.push({name:"Lugano",league:"Other clubs"});
+clubs.push({name:"Malaga",league:"Other clubs"});
+clubs.push({name:"Maritimo",league:"Other clubs"});
+clubs.push({name:"Middlesbrough",league:"Other clubs"});
+clubs.push({name:"Midtjylland",league:"Other clubs"});
+clubs.push({name:"Millwall",league:"Other clubs"});
+clubs.push({name:"Mjallby",league:"Other clubs"});
+clubs.push({name:"Monza",league:"Other clubs"});
+clubs.push({name:"Moreirense",league:"Other clubs"});
+clubs.push({name:"Nacional Da Madeira",league:"Other clubs"});
+clubs.push({name:"Nec Nijmegen",league:"Other clubs"});
+clubs.push({name:"NEOM",league:"Other clubs"});
+clubs.push({name:"Nice",league:"Other clubs"});
+clubs.push({name:"Nordsjaelland",league:"Other clubs"});
+clubs.push({name:"Norwich City",league:"Other clubs"});
+clubs.push({name:"Nottingham Forest",league:"Other clubs"});
+clubs.push({name:"Ofi",league:"Other clubs"});
+clubs.push({name:"Olympiacos",league:"Other clubs"});
+clubs.push({name:"Omonoia",league:"Other clubs"});
+clubs.push({name:"Orenburg",league:"Other clubs"});
+clubs.push({name:"Osasuna",league:"Other clubs"});
+clubs.push({name:"Paderborn",league:"Other clubs"});
+clubs.push({name:"Pafos",league:"Other clubs"});
+clubs.push({name:"Panathinaikos",league:"Other clubs"});
+clubs.push({name:"Paris Fc",league:"Other clubs"});
+clubs.push({name:"Parma",league:"Other clubs"});
+clubs.push({name:"Portsmouth",league:"Other clubs"});
+clubs.push({name:"Portuguese Football Federation",league:"Other clubs"});
+clubs.push({name:"Preston North End",league:"Other clubs"});
+clubs.push({name:"Queens Park Rangers",league:"Other clubs"});
+clubs.push({name:"Racing",league:"Other clubs"});
+clubs.push({name:"Rayo Vallecano",league:"Other clubs"});
+clubs.push({name:"Riga",league:"Other clubs"});
+clubs.push({name:"Rio Ave",league:"Other clubs"});
+clubs.push({name:"Rodina Moscow",league:"Other clubs"});
+clubs.push({name:"Rostov",league:"Other clubs"});
+clubs.push({name:"Rubin",league:"Other clubs"});
+clubs.push({name:"S Bratislava",league:"Other clubs"});
+clubs.push({name:"Sabah",league:"Other clubs"});
+clubs.push({name:"Salzburg",league:"Other clubs"});
+clubs.push({name:"Santa Clara",league:"Other clubs"});
+clubs.push({name:"Sassuolo",league:"Other clubs"});
+clubs.push({name:"Sc Braga",league:"Other clubs"});
+clubs.push({name:"Schalke 04",league:"Other clubs"});
+clubs.push({name:"Shakhtar",league:"Other clubs"});
+clubs.push({name:"Sheffield United",league:"Other clubs"});
+clubs.push({name:"Sint Truidense",league:"Other clubs"});
+clubs.push({name:"Slavia Praha",league:"Other clubs"});
+clubs.push({name:"Southampton",league:"Other clubs"});
+clubs.push({name:"Sparta Praha",league:"Other clubs"});
+clubs.push({name:"Spartak Moskva",league:"Other clubs"});
+clubs.push({name:"Sporting Cp",league:"Other clubs"});
+clubs.push({name:"Stoke City",league:"Other clubs"});
+clubs.push({name:"Sturm Graz",league:"Other clubs"});
+clubs.push({name:"Sunderland",league:"Other clubs"});
+clubs.push({name:"Sv Elversberg",league:"Other clubs"});
+clubs.push({name:"Swansea City",league:"Other clubs"});
+clubs.push({name:"Thun",league:"Other clubs"});
+clubs.push({name:"Torreense",league:"Other clubs"});
+clubs.push({name:"Toulouse",league:"Other clubs"});
+clubs.push({name:"Trabzonspor",league:"Other clubs"});
+clubs.push({name:"Troyes",league:"Other clubs"});
+clubs.push({name:"Twente",league:"Other clubs"});
+clubs.push({name:"U Craiova",league:"Other clubs"});
+clubs.push({name:"Udinese",league:"Other clubs"});
+clubs.push({name:"Union Berlin",league:"Other clubs"});
+clubs.push({name:"Union Saint Gilloise",league:"Other clubs"});
+clubs.push({name:"Venezia",league:"Other clubs"});
+clubs.push({name:"Viking",league:"Other clubs"});
+clubs.push({name:"Viktoria Plzen",league:"Other clubs"});
+clubs.push({name:"Vitoria De Guimaraes",league:"Other clubs"});
+clubs.push({name:"Watford",league:"Other clubs"});
+clubs.push({name:"Werder Bremen",league:"Other clubs"});
+clubs.push({name:"West Bromwich Albion",league:"Other clubs"});
+clubs.push({name:"Wolves",league:"Other clubs"});
+clubs.push({name:"Wrexham",league:"Other clubs"});
+nations.push({name:"Albania",league:"National team"});
+nations.push({name:"Algeria",league:"National team"});
+nations.push({name:"Andorra",league:"National team"});
+nations.push({name:"Argentina",league:"National team"});
+nations.push({name:"Armenia",league:"National team"});
+nations.push({name:"Australia",league:"National team"});
+nations.push({name:"Austria",league:"National team"});
+nations.push({name:"Azerbaijan",league:"National team"});
+nations.push({name:"Belarus",league:"National team"});
+nations.push({name:"Belgium",league:"National team"});
+nations.push({name:"Bosnia And Herzegovina",league:"National team"});
+nations.push({name:"Bulgaria",league:"National team"});
+nations.push({name:"Cabo Verde",league:"National team"});
+nations.push({name:"Canada",league:"National team"});
+nations.push({name:"Colombia",league:"National team"});
+nations.push({name:"Congo Dr",league:"National team"});
+nations.push({name:"Cote D Ivoire",league:"National team"});
+nations.push({name:"Curacao",league:"National team"});
+nations.push({name:"Cyprus",league:"National team"});
+nations.push({name:"Czech Republic",league:"National team"});
+nations.push({name:"Denmark",league:"National team"});
+nations.push({name:"Ecuador",league:"National team"});
+nations.push({name:"Egypt",league:"National team"});
+nations.push({name:"Estonia",league:"National team"});
+nations.push({name:"Faroe Islands",league:"National team"});
+nations.push({name:"Finland",league:"National team"});
+nations.push({name:"Georgia",league:"National team"});
+nations.push({name:"Ghana",league:"National team"});
+nations.push({name:"Gibraltar",league:"National team"});
+nations.push({name:"Greece",league:"National team"});
+nations.push({name:"Haiti",league:"National team"});
+nations.push({name:"Hungary",league:"National team"});
+nations.push({name:"Iceland",league:"National team"});
+nations.push({name:"Iran",league:"National team"});
+nations.push({name:"Iraq",league:"National team"});
+nations.push({name:"Israel",league:"National team"});
+nations.push({name:"Japan",league:"National team"});
+nations.push({name:"Jordan",league:"National team"});
+nations.push({name:"Kazakhstan",league:"National team"});
+nations.push({name:"Kosovo",league:"National team"});
+nations.push({name:"Latvia",league:"National team"});
+nations.push({name:"Liechtenstein",league:"National team"});
+nations.push({name:"Lithuania",league:"National team"});
+nations.push({name:"Luxembourg",league:"National team"});
+nations.push({name:"Malta",league:"National team"});
+nations.push({name:"Mexico",league:"National team"});
+nations.push({name:"Moldova",league:"National team"});
+nations.push({name:"Montenegro",league:"National team"});
+nations.push({name:"Morocco",league:"National team"});
+nations.push({name:"New Zealand",league:"National team"});
+nations.push({name:"North Macedonia",league:"National team"});
+nations.push({name:"Northern Ireland",league:"National team"});
+nations.push({name:"Norway",league:"National team"});
+nations.push({name:"Panama",league:"National team"});
+nations.push({name:"Paraguay",league:"National team"});
+nations.push({name:"Poland",league:"National team"});
+nations.push({name:"Qatar",league:"National team"});
+nations.push({name:"Republic Of Ireland",league:"National team"});
+nations.push({name:"Romania",league:"National team"});
+nations.push({name:"San Marino",league:"National team"});
+nations.push({name:"Saudi Arabia",league:"National team"});
+nations.push({name:"Scotland",league:"National team"});
+nations.push({name:"Senegal",league:"National team"});
+nations.push({name:"Serbia",league:"National team"});
+nations.push({name:"Slovakia",league:"National team"});
+nations.push({name:"Slovenia",league:"National team"});
+nations.push({name:"South Africa",league:"National team"});
+nations.push({name:"South Korea",league:"National team"});
+nations.push({name:"Spain",league:"National team"});
+nations.push({name:"Sweden",league:"National team"});
+nations.push({name:"Switzerland",league:"National team"});
+nations.push({name:"Tunisia",league:"National team"});
+nations.push({name:"Turkey",league:"National team"});
+nations.push({name:"Ukraine",league:"National team"});
+nations.push({name:"Uruguay",league:"National team"});
+nations.push({name:"USA",league:"National team"});
+nations.push({name:"Uzbekistan",league:"National team"});
+nations.push({name:"Wales",league:"National team"});
+
+const badgeImages = {
+  "Celta Vigo": "badges/celta.football-logos.cc.png",
+  "FC Porto": "badges/fc-porto.football-logos.cc.png",
+  "Manchester United": "badges/manchester-united.football-logos.cc.png",
+  "Zenit Saint Petersburg": "badges/zenit.football-logos.cc.png",
+  "Brighton and Hove Albion": "badges/brighton.football-logos.cc.png",
+  "Barcelona": "badges/barcelona.football-logos.cc.png",
+  "Borussia Dortmund": "badges/borussia-dortmund.football-logos.cc.png",
+  "CSKA Moscow": "badges/cska-moskva.football-logos.cc.png",
+  "Real Madrid": "badges/real-madrid.football-logos.cc.png",
+  "Mainz 05": "badges/mainz-05.football-logos.cc.png",
+  "Manchester City": "badges/manchester-city.football-logos.cc.png",
+  "Marseille": "badges/marseille.football-logos.cc.png",
+  "Monaco": "badges/as-monaco.football-logos.cc.png",
+  "Napoli": "badges/napoli.football-logos.cc.png",
+  "Newcastle United": "badges/newcastle.football-logos.cc.png",
+  "Paris Saint-Germain": "badges/paris-saint-germain.football-logos.cc.png",
+  "RB Leipzig": "badges/rb-leipzig.football-logos.cc.png",
+  "Real Betis": "badges/real-betis.football-logos.cc.png",
+  "Real Sociedad": "badges/real-sociedad.football-logos.cc.png",
+  "Rennes": "badges/rennes.football-logos.cc.png",
+  "SC Freiburg": "badges/freiburg.football-logos.cc.png",
+  "Sevilla": "badges/sevilla.football-logos.cc.png",
+  "Strasbourg": "badges/rc-strasbourg-alsace.football-logos.cc.png",
+  "Torino": "badges/torino.football-logos.cc.png",
+  "Tottenham Hotspur": "badges/tottenham.football-logos.cc.png",
+  "TSG Hoffenheim": "badges/hoffenheim.football-logos.cc.png",
+  "Valencia": "badges/valencia.football-logos.cc.png",
+  "VfB Stuttgart": "badges/vfb-stuttgart.football-logos.cc.png",
+  "Villarreal": "badges/villarreal.football-logos.cc.png",
+  "West Ham United": "badges/west-ham.football-logos.cc.png",
+  "AC Milan": "badges/milan.football-logos.cc.png",
+  "Arsenal": "badges/arsenal.football-logos.cc.png",
+  "AS Roma": "badges/roma.football-logos.cc.png",
+  "Aston Villa": "badges/aston-villa.football-logos.cc.png",
+  "Atalanta": "badges/atalanta.football-logos.cc.png",
+  "Athletic Club": "badges/athletic-club.football-logos.cc.png",
+  "Atlético Madrid": "badges/atletico-madrid.football-logos.cc.png",
+  "Bayern Munich": "badges/bayern-munchen.football-logos.cc.png",
+  "Borussia Mönchengladbach": "badges/borussia-monchengladbach.football-logos.cc.png",
+  "Chelsea": "badges/chelsea.football-logos.cc.png",
+  "Eintracht Frankfurt": "badges/eintracht-frankfurt.football-logos.cc.png",
+  "Fiorentina": "badges/fiorentina.football-logos.cc.png",
+  "Genoa": "badges/genoa.football-logos.cc.png",
+  "Inter Milan": "badges/inter.football-logos.cc.png",
+  "Lens": "badges/rc-lens.football-logos.cc.png",
+  "Lille": "badges/lille.football-logos.cc.png",
+  "Liverpool": "badges/liverpool.football-logos.cc.png",
+  "Lyon": "badges/lyon.football-logos.cc.png",
+  "Ajax": "badges/ajax.football-logos.cc.png",
+  "PSV": "badges/psv.football-logos.cc.png",
+  "France": "badges/france-national-team.football-logos.cc.png",
+  "Germany": "badges/germany-national-team.football-logos.cc.png",
+  "Brazil": "badges/brazil-national-team.football-logos.cc.png",
+  "Croatia": "badges/croatia-national-team.football-logos.cc.png",
+  "Italy": "badges/italy-national-team.football-logos.cc.png",
+  "Netherlands": "badges/dutch-national-team.football-logos.cc.png",
+  "England": "badges/england-national-team.football-logos.cc.png",
+  "Abha": "badges/abha.football-logos.cc.png",
+  "Academico De Viseu": "badges/academico-de-viseu.football-logos.cc.png",
+  "Aek Athens": "badges/aek-athens.football-logos.cc.png",
+  "Agf": "badges/agf.football-logos.cc.png",
+  "Akhmat": "badges/akhmat.football-logos.cc.png",
+  "Akron": "badges/akron.football-logos.cc.png",
+  "Al Ahli": "badges/al-ahli.football-logos.cc.png",
+  "Al Ettifaq": "badges/al-ettifaq.football-logos.cc.png",
+  "Al Faisaly Fc": "badges/al-faisaly-fc.football-logos.cc.png",
+  "Al Fateh": "badges/al-fateh.football-logos.cc.png",
+  "Al Fayha": "badges/al-fayha.football-logos.cc.png",
+  "Al Hazem": "badges/al-hazem.football-logos.cc.png",
+  "Al Hilal": "badges/al-hilal.football-logos.cc.png",
+  "Al Ittihad": "badges/al-ittihad.football-logos.cc.png",
+  "Al Khaleej": "badges/al-khaleej.football-logos.cc.png",
+  "Al Kholood": "badges/al-kholood.football-logos.cc.png",
+  "Al Nassr": "badges/al-nassr.football-logos.cc.png",
+  "Al Qadsiah": "badges/al-qadsiah.football-logos.cc.png",
+  "Al Riyadh": "badges/al-riyadh.football-logos.cc.png",
+  "Al Shabab": "badges/al-shabab.football-logos.cc.png",
+  "Al Taawoun": "badges/al-taawoun.football-logos.cc.png",
+  "Albania": "badges/albania-national-team.football-logos.cc.png",
+  "Algeria": "badges/algeria-national-team.football-logos.cc.png",
+  "Alverca": "badges/alverca.football-logos.cc.png",
+  "Anderlecht": "badges/anderlecht.football-logos.cc.png",
+  "Andorra": "badges/andorra-national-team.football-logos.cc.png",
+  "Angers": "badges/angers.football-logos.cc.png",
+  "Ararat Armenia": "badges/ararat-armenia.football-logos.cc.png",
+  "Argentina": "badges/argentina-national-team.football-logos.cc.png",
+  "Armenia": "badges/armenia-national-team.football-logos.cc.png",
+  "Arouca": "badges/arouca.football-logos.cc.png",
+  "Augsburg": "badges/augsburg.football-logos.cc.png",
+  "Australia": "badges/australia-national-team.football-logos.cc.png",
+  "Austria": "badges/austria-national-team.football-logos.cc.png",
+  "Auxerre": "badges/auxerre.football-logos.cc.png",
+  "AZ Alkmaar": "badges/az-alkmaar.football-logos.cc.png",
+  "Azerbaijan": "badges/azerbaijan-national-team.football-logos.cc.png",
+  "Baltika": "badges/baltika.football-logos.cc.png",
+  "Bayer Leverkusen": "badges/bayer-leverkusen.football-logos.cc.png",
+  "Belarus": "badges/belarus-national-team.football-logos.cc.png",
+  "Belgium": "badges/belgium-national-team.football-logos.cc.png",
+  "Benfica": "badges/benfica.football-logos.cc.png",
+  "Besiktas": "badges/besiktas.football-logos.cc.png",
+  "Birmingham": "badges/birmingham.football-logos.cc.png",
+  "Blackburn Rovers": "badges/blackburn-rovers.football-logos.cc.png",
+  "Bodo Glimt": "badges/bodo-glimt.football-logos.cc.png",
+  "Bologna": "badges/bologna.football-logos.cc.png",
+  "Bolton": "badges/bolton.football-logos.cc.png",
+  "Borac": "badges/borac.football-logos.cc.png",
+  "Bosnia And Herzegovina": "badges/bosnia-and-herzegovina-national-team.football-logos.cc.png",
+  "Bournemouth": "badges/bournemouth.football-logos.cc.png",
+  "Brann": "badges/brann.football-logos.cc.png",
+  "Brentford": "badges/brentford.football-logos.cc.png",
+  "Brest": "badges/brest.football-logos.cc.png",
+  "Bristol City": "badges/bristol-city.football-logos.cc.png",
+  "Bulgaria": "badges/bulgaria-national-team.football-logos.cc.png",
+  "Burnley": "badges/burnley.football-logos.cc.png",
+  "Cabo Verde": "badges/cabo-verde-national-team.football-logos.cc.png",
+  "Cagliari": "badges/cagliari.football-logos.cc.png",
+  "Canada": "badges/canada-national-team.football-logos.cc.png",
+  "Cardiff City": "badges/cardiff-city.football-logos.cc.png",
+  "Casa Pia Ac": "badges/casa-pia-ac.football-logos.cc.png",
+  "Celje": "badges/celje.football-logos.cc.png",
+  "Celtic": "badges/celtic.football-logos.cc.png",
+  "Charlton": "badges/charlton.football-logos.cc.png",
+  "Club Brugge": "badges/club-brugge.football-logos.cc.png",
+  "Colombia": "badges/colombia-national-team.football-logos.cc.png",
+  "Como 1907": "badges/como-1907.football-logos.cc.png",
+  "Congo Dr": "badges/congo-dr-national-team.football-logos.cc.png",
+  "Copenhagen": "badges/copenhagen.football-logos.cc.png",
+  "Cote D Ivoire": "badges/cote-d-ivoire-national-team.football-logos.cc.png",
+  "Coventry City": "badges/coventry-city.football-logos.cc.png",
+  "Crvena Zvezda": "badges/crvena-zvezda.football-logos.cc.png",
+  "Crystal Palace": "badges/crystal-palace.football-logos.cc.png",
+  "Cska Sofia": "badges/cska-sofia.football-logos.cc.png",
+  "Curacao": "badges/curacao-national-team.football-logos.cc.png",
+  "Cyprus": "badges/cyprus-national-team.football-logos.cc.png",
+  "Czech Republic": "badges/czech-republic-national-team.football-logos.cc.png",
+  "Denmark": "badges/denmark-national-team.football-logos.cc.png",
+  "Deportivo La Coruna": "badges/deportivo-la-coruna.football-logos.cc.png",
+  "Deportivo": "badges/deportivo.football-logos.cc.png",
+  "Derby County": "badges/derby-county.football-logos.cc.png",
+  "Dinamo Zagreb": "badges/dinamo-zagreb.football-logos.cc.png",
+  "Diriyah Club": "badges/diriyah-club.football-logos.cc.png",
+  "Dynamo Makhachkala": "badges/dynamo-makhachkala.football-logos.cc.png",
+  "Dynamo Moscow": "badges/dynamo-moscow.football-logos.cc.png",
+  "Ecuador": "badges/ecuador-national-team.football-logos.cc.png",
+  "Egnatia": "badges/egnatia.football-logos.cc.png",
+  "Egypt": "badges/egypt-national-team.football-logos.cc.png",
+  "Elche": "badges/elche.football-logos.cc.png",
+  "Espanyol": "badges/espanyol.football-logos.cc.png",
+  "Estonia": "badges/estonia-national-team.football-logos.cc.png",
+  "Estoril": "badges/estoril.football-logos.cc.png",
+  "Estrela Da Amadora": "badges/estrela-da-amadora.football-logos.cc.png",
+  "Everton": "badges/everton.football-logos.cc.png",
+  "Fakel": "badges/fakel.football-logos.cc.png",
+  "Famalicao": "badges/famalicao.football-logos.cc.png",
+  "Faroe Islands": "badges/faroe-islands-national-team.football-logos.cc.png",
+  "Fenerbahce": "badges/fenerbahce.football-logos.cc.png",
+  "Ferencvaros": "badges/ferencvaros.football-logos.cc.png",
+  "Feyenoord": "badges/feyenoord.football-logos.cc.png",
+  "Finland": "badges/finland-national-team.football-logos.cc.png",
+  "Frosinone": "badges/frosinone.football-logos.cc.png",
+  "Fulham": "badges/fulham.football-logos.cc.png",
+  "Galatasaray": "badges/galatasaray.football-logos.cc.png",
+  "Gent": "badges/gent.football-logos.cc.png",
+  "Georgia": "badges/georgia-national-team.football-logos.cc.png",
+  "Getafe": "badges/getafe.football-logos.cc.png",
+  "Ghana": "badges/ghana-national-team.football-logos.cc.png",
+  "Gibraltar": "badges/gibraltar-national-team.football-logos.cc.png",
+  "Gil Vicente": "badges/gil-vicente.football-logos.cc.png",
+  "Greece": "badges/greece-national-team.football-logos.cc.png",
+  "Haiti": "badges/haiti-national-team.football-logos.cc.png",
+  "Hajduk Split": "badges/hajduk-split.football-logos.cc.png",
+  "Hamburger Sv": "badges/hamburger-sv.football-logos.cc.png",
+  "Hapoel Beer Sheva": "badges/hapoel-beer-sheva.football-logos.cc.png",
+  "Hearts": "badges/hearts.football-logos.cc.png",
+  "Hull City": "badges/hull-city.football-logos.cc.png",
+  "Hungary": "badges/hungary-national-team.football-logos.cc.png",
+  "Iberia": "badges/iberia.football-logos.cc.png",
+  "Iceland": "badges/iceland-national-team.football-logos.cc.png",
+  "Inter Escaldes": "badges/inter-escaldes.football-logos.cc.png",
+  "Ipswich": "badges/ipswich.football-logos.cc.png",
+  "Iran": "badges/iran-national-team.football-logos.cc.png",
+  "Iraq": "badges/iraq-national-team.football-logos.cc.png",
+  "Israel": "badges/israel-national-team.football-logos.cc.png",
+  "Jablonec": "badges/jablonec.football-logos.cc.png",
+  "Jagiellonia": "badges/jagiellonia.football-logos.cc.png",
+  "Japan": "badges/japan-national-team.football-logos.cc.png",
+  "Jordan": "badges/jordan-national-team.football-logos.cc.png",
+  "Juventus": "badges/juventus.football-logos.cc.png",
+  "Kairat": "badges/kairat.football-logos.cc.png",
+  "Kauno Zalgiris": "badges/kauno-zalgiris.football-logos.cc.png",
+  "Kazakhstan": "badges/kazakhstan-national-team.football-logos.cc.png",
+  "Koln": "badges/koln.football-logos.cc.png",
+  "Kosovo": "badges/kosovo-national-team.football-logos.cc.png",
+  "Krasnodar": "badges/krasnodar.football-logos.cc.png",
+  "Krylya Sovetov": "badges/krylya-sovetov.football-logos.cc.png",
+  "Kups": "badges/kups.football-logos.cc.png",
+  "Lask": "badges/lask.football-logos.cc.png",
+  "Latvia": "badges/latvia-national-team.football-logos.cc.png",
+  "Lazio": "badges/lazio.football-logos.cc.png",
+  "Le Havre Ac": "badges/le-havre-ac.football-logos.cc.png",
+  "Le Mans": "badges/le-mans.football-logos.cc.png",
+  "Lecce": "badges/lecce.football-logos.cc.png",
+  "Lech Poznan": "badges/lech-poznan.football-logos.cc.png",
+  "Leeds United": "badges/leeds-united.football-logos.cc.png",
+  "Levante": "badges/levante.football-logos.cc.png",
+  "Levski": "badges/levski.football-logos.cc.png",
+  "Liechtenstein": "badges/liechtenstein-national-team.football-logos.cc.png",
+  "Lillestrom": "badges/lillestrom.football-logos.cc.png",
+  "Lincoln City": "badges/lincoln-city.football-logos.cc.png",
+  "Lincoln Red Imps": "badges/lincoln-red-imps.football-logos.cc.png",
+  "Lithuania": "badges/lithuania-national-team.football-logos.cc.png",
+  "Lokomotiv Moskva": "badges/lokomotiv-moskva.football-logos.cc.png",
+  "Lorient": "badges/lorient.football-logos.cc.png",
+  "Lugano": "badges/lugano.football-logos.cc.png",
+  "Luxembourg": "badges/luxembourg-national-team.football-logos.cc.png",
+  "Malaga": "badges/malaga.football-logos.cc.png",
+  "Malta": "badges/malta-national-team.football-logos.cc.png",
+  "Maritimo": "badges/maritimo.football-logos.cc.png",
+  "Mexico": "badges/mexico-national-team.football-logos.cc.png",
+  "Middlesbrough": "badges/middlesbrough.football-logos.cc.png",
+  "Midtjylland": "badges/midtjylland.football-logos.cc.png",
+  "Millwall": "badges/millwall.football-logos.cc.png",
+  "Mjallby": "badges/mjallby.football-logos.cc.png",
+  "Moldova": "badges/moldova-national-team.football-logos.cc.png",
+  "Montenegro": "badges/montenegro-national-team.football-logos.cc.png",
+  "Monza": "badges/monza.football-logos.cc.png",
+  "Moreirense": "badges/moreirense.football-logos.cc.png",
+  "Morocco": "badges/morocco-national-team.football-logos.cc.png",
+  "Nacional Da Madeira": "badges/nacional-da-madeira.football-logos.cc.png",
+  "Nec Nijmegen": "badges/nec-nijmegen.football-logos.cc.png",
+  "NEOM": "badges/neom.football-logos.cc.png",
+  "New Zealand": "badges/new-zealand-national-team.football-logos.cc.png",
+  "Nice": "badges/nice.football-logos.cc.png",
+  "Nordsjaelland": "badges/nordsjaelland.football-logos.cc.png",
+  "North Macedonia": "badges/north-macedonia-national-team.football-logos.cc.png",
+  "Northern Ireland": "badges/northern-ireland-national-team.football-logos.cc.png",
+  "Norway": "badges/norway-national-team.football-logos.cc.png",
+  "Norwich City": "badges/norwich-city.football-logos.cc.png",
+  "Nottingham Forest": "badges/nottingham-forest.football-logos.cc.png",
+  "Ofi": "badges/ofi.football-logos.cc.png",
+  "Olympiacos": "badges/olympiacos.football-logos.cc.png",
+  "Omonoia": "badges/omonoia.football-logos.cc.png",
+  "Orenburg": "badges/orenburg.football-logos.cc.png",
+  "Osasuna": "badges/osasuna.football-logos.cc.png",
+  "Paderborn": "badges/paderborn.football-logos.cc.png",
+  "Pafos": "badges/pafos.football-logos.cc.png",
+  "Panama": "badges/panama-national-team.football-logos.cc.png",
+  "Panathinaikos": "badges/panathinaikos.football-logos.cc.png",
+  "Paraguay": "badges/paraguay-national-team.football-logos.cc.png",
+  "Paris Fc": "badges/paris-fc.football-logos.cc.png",
+  "Parma": "badges/parma.football-logos.cc.png",
+  "Poland": "badges/poland-national-team.football-logos.cc.png",
+  "Portsmouth": "badges/portsmouth.football-logos.cc.png",
+  "Portuguese Football Federation": "badges/portuguese-football-federation.football-logos.cc.png",
+  "Preston North End": "badges/preston-north-end.football-logos.cc.png",
+  "Qatar": "badges/qatar-national-team.football-logos.cc.png",
+  "Queens Park Rangers": "badges/queens-park-rangers.football-logos.cc.png",
+  "Racing": "badges/racing.football-logos.cc.png",
+  "Rayo Vallecano": "badges/rayo-vallecano.football-logos.cc.png",
+  "Republic Of Ireland": "badges/republic-of-ireland-national-team.football-logos.cc.png",
+  "Riga": "badges/riga.football-logos.cc.png",
+  "Rio Ave": "badges/rio-ave.football-logos.cc.png",
+  "Rodina Moscow": "badges/rodina-moscow.football-logos.cc.png",
+  "Romania": "badges/romania-national-team.football-logos.cc.png",
+  "Rostov": "badges/rostov.football-logos.cc.png",
+  "Rubin": "badges/rubin.football-logos.cc.png",
+  "S Bratislava": "badges/s-bratislava.football-logos.cc.png",
+  "Sabah": "badges/sabah.football-logos.cc.png",
+  "Salzburg": "badges/salzburg.football-logos.cc.png",
+  "San Marino": "badges/san-marino-national-team.football-logos.cc.png",
+  "Santa Clara": "badges/santa-clara.football-logos.cc.png",
+  "Sassuolo": "badges/sassuolo.football-logos.cc.png",
+  "Saudi Arabia": "badges/saudi-arabia-national-team.football-logos.cc.png",
+  "Sc Braga": "badges/sc-braga.football-logos.cc.png",
+  "Schalke 04": "badges/schalke-04.football-logos.cc.png",
+  "Scotland": "badges/scotland-national-team.football-logos.cc.png",
+  "Senegal": "badges/senegal-national-team.football-logos.cc.png",
+  "Serbia": "badges/serbia-national-team.football-logos.cc.png",
+  "Shakhtar": "badges/shakhtar.football-logos.cc.png",
+  "Sheffield United": "badges/sheffield-united.football-logos.cc.png",
+  "Sint Truidense": "badges/sint-truidense.football-logos.cc.png",
+  "Slavia Praha": "badges/slavia-praha.football-logos.cc.png",
+  "Slovakia": "badges/slovakia-national-team.football-logos.cc.png",
+  "Slovenia": "badges/slovenia-national-team.football-logos.cc.png",
+  "South Africa": "badges/south-africa-national-team.football-logos.cc.png",
+  "South Korea": "badges/south-korea-national-team.football-logos.cc.png",
+  "Southampton": "badges/southampton.football-logos.cc.png",
+  "Spain": "badges/spain-national-team.football-logos.cc.png",
+  "Sparta Praha": "badges/sparta-praha.football-logos.cc.png",
+  "Spartak Moskva": "badges/spartak-moskva.football-logos.cc.png",
+  "Sporting Cp": "badges/sporting-cp.football-logos.cc.png",
+  "Stoke City": "badges/stoke-city.football-logos.cc.png",
+  "Sturm Graz": "badges/sturm-graz.football-logos.cc.png",
+  "Sunderland": "badges/sunderland.football-logos.cc.png",
+  "Sv Elversberg": "badges/sv-elversberg.football-logos.cc.png",
+  "Swansea City": "badges/swansea-city.football-logos.cc.png",
+  "Sweden": "badges/sweden-national-team.football-logos.cc.png",
+  "Switzerland": "badges/switzerland-national-team.football-logos.cc.png",
+  "Thun": "badges/thun.football-logos.cc.png",
+  "Torreense": "badges/torreense.football-logos.cc.png",
+  "Toulouse": "badges/toulouse.football-logos.cc.png",
+  "Trabzonspor": "badges/trabzonspor.football-logos.cc.png",
+  "Troyes": "badges/troyes.football-logos.cc.png",
+  "Tunisia": "badges/tunisia-national-team.football-logos.cc.png",
+  "Turkey": "badges/turkey-national-team.football-logos.cc.png",
+  "Twente": "badges/twente.football-logos.cc.png",
+  "U Craiova": "badges/u-craiova.football-logos.cc.png",
+  "Udinese": "badges/udinese.football-logos.cc.png",
+  "Ukraine": "badges/ukraine-national-team.football-logos.cc.png",
+  "Union Berlin": "badges/union-berlin.football-logos.cc.png",
+  "Union Saint Gilloise": "badges/union-saint-gilloise.football-logos.cc.png",
+  "Uruguay": "badges/uruguay-national-team.football-logos.cc.png",
+  "USA": "badges/usa-national-team.football-logos.cc.png",
+  "Uzbekistan": "badges/uzbekistan-national-team.football-logos.cc.png",
+  "Venezia": "badges/venezia.football-logos.cc.png",
+  "Viking": "badges/viking.football-logos.cc.png",
+  "Viktoria Plzen": "badges/viktoria-plzen.football-logos.cc.png",
+  "Vitoria De Guimaraes": "badges/vitoria-de-guimaraes.football-logos.cc.png",
+  "Wales": "badges/wales-national-team.football-logos.cc.png",
+  "Watford": "badges/watford.football-logos.cc.png",
+  "Werder Bremen": "badges/werder-bremen.football-logos.cc.png",
+  "West Bromwich Albion": "badges/west-bromwich-albion.football-logos.cc.png",
+  "Wolves": "badges/wolves.football-logos.cc.png",
+  "Wrexham": "badges/wrexham.football-logos.cc.png"
+};
+const $ = id => document.getElementById(id);
+let mode='mixed', deck=[], current=null, score=0, streak=0, seconds=60, question=0, running=false, answered=false, ticker=null, nextTimeout=null, best=0;
+const svgWrap = (inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="100%" height="100%" aria-hidden="true">${inner}</svg>`;
+function crestSvg(team) {
+ const [a,b,c]=team.c;
+ let body='';
+ if(team.style==='round') body=`<circle cx="100" cy="105" r="78" fill="${a}" stroke="${c}" stroke-width="8"/><circle cx="100" cy="105" r="63" fill="${b}" stroke="${a}" stroke-width="7"/>`;
+ else if(team.style==='oval') body=`<ellipse cx="100" cy="105" rx="65" ry="82" fill="${a}" stroke="${c}" stroke-width="7"/><ellipse cx="100" cy="105" rx="52" ry="68" fill="${b}" stroke="${a}" stroke-width="5"/>`;
+ else body=`<path d="M28 30 L172 30 L166 132 Q153 174 100 200 Q47 174 34 132 Z" fill="${a}" stroke="${c}" stroke-width="7" stroke-linejoin="round"/><path d="M42 43 L158 43 L153 128 Q143 161 100 183 Q57 161 47 128 Z" fill="${b}" stroke="${a}" stroke-width="4"/>`;
+ let motif='';
+ if(team.motif==='stripes'||team.motif==='bars') { for(let i=0;i<5;i++) motif+=`<path d="M${57+i*21} 48 L${57+i*21} 155" stroke="${team.motif==='bars'?a:c}" stroke-width="${team.motif==='bars'?10:8}" opacity=".88"/>`; }
+ if(team.motif==='diamonds'||team.motif==='diamond'||team.motif==='checks') { for(let r=0;r<4;r++) for(let col=0;col<4;col++) motif+=`<path d="M${68+col*17} ${70+r*17} l8 -12 l8 12 l-8 12 Z" fill="${(r+col)%2===0?c:a}" opacity=".96"/>`; }
+ if(team.motif==='diagonal') { motif=`<path d="M52 150 L132 55 M73 166 L153 71 M45 117 L108 42 M95 174 L164 92" stroke="${c}" stroke-width="10" opacity=".9"/>`; }
+ if(team.motif==='cross') { motif=`<path d="M89 56 H111 V91 H145 V113 H111 V149 H89 V113 H55 V91 H89 Z" fill="${c}"/>`; }
+ if(team.motif==='star') { motif=`<path d="M100 56 L111 84 L141 85 L118 103 L126 132 L100 115 L74 132 L82 103 L59 85 L89 84 Z" fill="${c}" stroke="${a}" stroke-width="2"/>`; }
+ if(team.motif==='tower') { motif=`<path d="M76 150 L81 98 L88 98 L88 72 L100 55 L112 72 L112 98 L119 98 L124 150 Z" fill="${c}"/><path d="M93 150 V112 H107 V150" fill="${a}"/>`; }
+ if(team.motif==='sun') { motif=`<circle cx="100" cy="105" r="30" fill="${c}"/>`; for(let i=0;i<12;i++){let angle=i*Math.PI/6;let x1=100+Math.cos(angle)*37,y1=105+Math.sin(angle)*37,x2=100+Math.cos(angle)*48,y2=105+Math.sin(angle)*48;motif+=`<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${c}" stroke-width="5"/>`;}}
+ if(team.motif==='roundel') motif=`<circle cx="100" cy="105" r="28" fill="${c}" stroke="${b}" stroke-width="8"/><circle cx="100" cy="105" r="12" fill="${a}"/>`;
+ if(team.motif==='yin') motif=`<circle cx="100" cy="105" r="34" fill="${c}"/><path d="M100 71 A17 17 0 0 1 100 105 A17 17 0 0 0 100 139 A34 34 0 0 0 100 71" fill="${a}"/><circle cx="100" cy="88" r="5" fill="${a}"/><circle cx="100" cy="122" r="5" fill="${c}"/>`;
+ if(team.motif==='leaf') motif=`<path d="M100 142 C56 117 75 80 100 70 C125 80 144 117 100 142 Z" fill="${c}"/><path d="M100 139 L100 79 M100 105 L82 92 M100 116 L119 98" stroke="${a}" stroke-width="4" fill="none"/>`;
+ if(team.motif==='eagle'||team.motif==='lion'||team.motif==='rooster') motif=`<path d="M65 72 L91 84 L100 65 L109 84 L135 72 L126 105 L139 124 L110 120 L100 145 L90 120 L61 124 L74 105 Z" fill="${c}" stroke="${a}" stroke-width="3"/>`;
+ if(team.motif==='checks') { for(let r=0;r<4;r++) for(let col=0;col<4;col++) motif+=`<rect x="${68+col*16}" y="${75+r*16}" width="16" height="16" fill="${(r+col)%2===0?a:c}"/>`; }
+ if(!motif) motif=`<circle cx="100" cy="105" r="31" fill="${c}"/>`;
+ const detail=team.style==='round'||team.style==='oval'?`<circle cx="100" cy="105" r="${team.style==='oval'?43:48}" fill="none" stroke="${c}" stroke-width="4"/>`:`<path d="M55 48 L145 48" stroke="${c}" stroke-width="4"/>`;
+ return svgWrap(`<defs><clipPath id="clip"><circle cx="100" cy="105" r="${team.style==='round'?58:52}"/></clipPath></defs>${body}${detail}<g>${motif}</g><path d="M44 34 L156 34" stroke="${c}" stroke-width="3" opacity=".7"/>`);
+}
+function eligiblePool(){
+ const filter=$('leagueFilter').value;
+ if(mode==='nations') return nations.filter(t=>badgeImages[t.name]);
+ if(mode==='clubs') return clubs.filter(t=>badgeImages[t.name]&&(filter==='all'||t.league===filter));
+ return [...clubs.filter(t=>badgeImages[t.name]&&(filter==='all'||t.league===filter)),...nations.filter(t=>badgeImages[t.name])];
+}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function makeQuestion(){
+ let pool=eligiblePool();
+ if(pool.length<4){$('feedback').textContent='Choose a league with at least four clubs.';return;}
+ if(!deck.length) deck=shuffle(pool.slice());
+ current=deck.pop();
+ let wrongPool=pool.filter(t=>t.name!==current.name);
+ const options=shuffle([current,...shuffle(wrongPool).slice(0,3)]);
+ const badgePath=badgeImages[current.name];
+ $('crest').innerHTML=badgePath?`<img src="${badgePath}" alt="Football badge" draggable="false" onerror="this.style.display='none';this.parentElement.textContent='Badge image missing'">`:crestSvg(current);
+ $('badgeStage').classList.remove('pop'); void $('badgeStage').offsetWidth; $('badgeStage').classList.add('pop');
+ $('roundLabel').textContent=current.league==='National team'?'Identify this national team':'Identify this club';
+ $('questionNum').textContent=question+1;
+ $('answers').innerHTML=options.map((t,i)=>`<button class="answer" data-name="${t.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" aria-label="Option ${i+1}: ${t.name}"><span class="key">${i+1}</span><span class="answer-name">${t.name}</span></button>`).join('');
+ [...$('answers').querySelectorAll('button')].forEach((btn,i)=>btn.addEventListener('click',()=>choose(btn,options[i])));
+ answered=false; $('feedback').textContent='Pick the correct badge.'; $('feedback').className='feedback';
+}
+function renderStats(){ $('score').textContent=score; $('streak').textContent=streak; $('bestScore').textContent=best; $('timer').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`; $('timer').classList.toggle('urgent',seconds<=10&&running); $('timerFill').style.width=`${seconds/60*100}%`; $('timerFill').style.background=seconds<=10?'#f06464':'var(--site-primary)'; }
+function choose(btn,team){if(!running||answered)return;answered=true;const buttons=[...$('answers').querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);const isCorrect=team.name===current.name;
+ if(isCorrect){score++;streak++;best=Math.max(best,score);btn.classList.add('correct');$('feedback').textContent='Correct! +1 point';$('feedback').className='feedback good';}
+ else {streak=0;btn.classList.add('wrong');const correct=buttons.find(b=>b.querySelector('.answer-name').textContent===current.name);if(correct)correct.classList.add('correct');$('feedback').textContent=`Not quite — it was ${current.name}.`;$('feedback').className='feedback bad';}
+ question++;renderStats();nextTimeout=setTimeout(()=>{if(running)makeQuestion();},500);
+}
+function endGame(){running=false;clearInterval(ticker);clearTimeout(nextTimeout);$('startBtn').textContent='Start game ↗';$('startBtn').disabled=false;$('finalScore').textContent=score;$('resultCopy').textContent=`You answered ${score} correctly in 60 seconds. ${score>=15?'Excellent badge knowledge!':score>=8?'Solid effort — go again and beat it.':'One more round and you will know these badges by heart.'}`;$('overlay').classList.add('show');}
+function startGame(){clearInterval(ticker);clearTimeout(nextTimeout);$('overlay').classList.remove('show');score=0;streak=0;seconds=60;question=0;running=true;answered=false;deck=[];$('startBtn').textContent='Game in progress…';$('startBtn').disabled=true;renderStats();makeQuestion();ticker=setInterval(()=>{if(!running)return;seconds--;renderStats();if(seconds<=0){seconds=0;renderStats();endGame();}},1000);}
+function resetGame(){clearInterval(ticker);clearTimeout(nextTimeout);running=false;answered=false;score=0;streak=0;seconds=60;question=0;deck=[];current=null;$('overlay').classList.remove('show');$('startBtn').disabled=false;$('startBtn').textContent='Start game ↗';$('timer').textContent='01:00';$('timerFill').style.width='100%';$('timerFill').style.background='var(--site-primary)';$('timer').classList.remove('urgent');$('score').textContent='0';$('streak').textContent='0';$('questionNum').textContent='—';$('roundLabel').textContent='Name that badge';$('crest').innerHTML='';$('answers').innerHTML='<button class="answer" disabled><span class="key">1</span><span class="answer-name">Ready when you are</span></button><button class="answer" disabled><span class="key">2</span><span class="answer-name">Four options</span></button><button class="answer" disabled><span class="key">3</span><span class="answer-name">One correct answer</span></button><button class="answer" disabled><span class="key">4</span><span class="answer-name">Beat the clock</span></button>';$('feedback').textContent='Ready?';$('feedback').className='feedback';$('startBtn').disabled=false;}
+$('startBtn').addEventListener('click',startGame);$('resetBtn').addEventListener('click',resetGame);$('playAgain').addEventListener('click',startGame);
+document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=>{if(running)return;document.querySelectorAll('.mode').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=btn.dataset.mode;$('leagueFilter').disabled=mode==='nations';$('leagueFilter').style.opacity=mode==='nations'?'.45':'1';resetGame();}));
+$('leagueFilter').addEventListener('change',()=>{if(!running)resetGame();});
+document.addEventListener('keydown',e=>{if(!running||answered||!['1','2','3','4'].includes(e.key))return;const btn=$('answers').querySelectorAll('button')[Number(e.key)-1];if(btn&&!btn.disabled)btn.click();});
+resetGame();
+</script>
+</body>
+</html>
