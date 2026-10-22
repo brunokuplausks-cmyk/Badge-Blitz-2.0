@@ -22,9 +22,9 @@
   color-scheme: light dark;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--site-background); color: var(--site-on-background); font-family: var(--site-font-body); }
-#app { min-height: 100vh; width: 100%; border-radius: 0; background: light-dark(#f3f6f5, var(--site-background)); color: light-dark(#15211f, var(--site-on-background)); overflow: hidden; position: relative; }
-#app::before { content:""; position:absolute; width:520px; height:520px; border-radius:50%; right:-170px; top:-240px; background:radial-gradient(circle, color-mix(in srgb, var(--site-primary) 16%, transparent), transparent 68%); opacity:var(--site-decoration-opacity); pointer-events:none; }
+body { margin: 0; background: #187a10 url("background-badge-blitz.png") center top / cover fixed no-repeat; color: var(--site-on-background); font-family: var(--site-font-body); }
+#app { min-height: 100vh; width: 100%; border-radius: 0; background: transparent; color: light-dark(#15211f, var(--site-on-background)); overflow: hidden; position: relative; }
+#app::before { display:none; content:""; position:absolute; width:520px; height:520px; border-radius:50%; right:-170px; top:-240px; background:radial-gradient(circle, color-mix(in srgb, var(--site-primary) 16%, transparent), transparent 68%); opacity:var(--site-decoration-opacity); pointer-events:none; }
 .shell { max-width: 900px; margin: 0 auto; padding: calc(16px * var(--site-spacing-scale)) calc(14px * var(--site-spacing-scale)) 22px; position:relative; }
 .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
 .brand { display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:-.04em; font-size:22px; }
@@ -37,7 +37,7 @@ h1 { margin:0; font-family:var(--site-font-heading); font-size:clamp(32px,7vw,58
 .best { text-align:right; padding-bottom:4px; }
 .best span { display:block; color:light-dark(#75827e,#a9b8b6); text-transform:uppercase; letter-spacing:.12em; font-size:11px; font-weight:800; }
 .best strong { font-size:30px; letter-spacing:-.05em; }
-.game-card { background:light-dark(#fff,#131d23); border:1px solid light-dark(#dce5e2,#27363d); border-radius:16px; padding:clamp(10px,2vw,20px); box-shadow:0 18px 55px rgba(0,0,0,.08); }
+.game-card { background:light-dark(rgba(255,255,255,.96),rgba(19,29,35,.96)); border:1px solid light-dark(#dce5e2,#27363d); border-radius:16px; padding:clamp(10px,2vw,20px); box-shadow:0 18px 55px rgba(0,0,0,.08); }
 .toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
 .modes { display:flex; gap:6px; padding:5px; background:light-dark(#edf2f0,#0c1419); border-radius:14px; flex-wrap:wrap; }
 .mode { border:0; border-radius:10px; background:transparent; color:light-dark(#65716e,#9aa9a7); padding:10px 13px; font-size:12px; font-weight:800; cursor:pointer; transition:.15s; }
@@ -105,7 +105,7 @@ select { border:1px solid light-dark(#d9e3df,#304149); border-radius:10px; paddi
 .timer { font-size:clamp(25px,4vw,38px); font-weight:950; letter-spacing:-.07em; line-height:1.15; margin:7px 0 9px; font-variant-numeric:tabular-nums; }
 .pill.urgent { color:#f06464; font-weight:1000; border-color:#f06464; font-variant-numeric:tabular-nums; }
 .timer.urgent { color:#f06464; font-weight:1000; text-shadow:0 0 12px rgba(240,100,100,.25); }
-.leaderboard{margin-top:16px;padding:16px;border:1px solid light-dark(#dce5e2,#304149);border-radius:14px;background:light-dark(#f8faf9,#17232a)}.leaderboard h2{font-size:17px;margin:0 0 6px}.leaderboard p{font-size:12px;color:light-dark(#62716c,#9eafaa)}.leaderboard table{width:100%;border-collapse:collapse;font-size:14px}.leaderboard td,.leaderboard th{padding:9px 4px;border-bottom:1px solid light-dark(#dce5e2,#304149);text-align:left}.leaderboard td:last-child,.leaderboard th:last-child{text-align:right}.login-screen{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#0d1419ee;padding:18px}.login-screen.hidden{display:none}.login-box{width:min(100%,420px);padding:30px;border-radius:18px;background:#17232a;color:#fff;text-align:center;border:1px solid #304149}.login-box input{width:100%;padding:13px;border-radius:10px;border:1px solid #43515a;background:#0d1419;color:#fff;margin:12px 0}.login-box button{width:100%}.player-label{font-size:12px;color:light-dark(#65716e,#9eafaa)}
+.leaderboard{margin-top:16px;padding:16px;border:1px solid light-dark(#dce5e2,#304149);border-radius:14px;background:light-dark(#f8faf9,#17232a)}.leaderboard h2{font-size:17px;margin:0 0 6px}.leaderboard p{font-size:12px;color:light-dark(#62716c,#9eafaa)}.leaderboard table{width:100%;border-collapse:collapse;font-size:14px}.leaderboard td,.leaderboard th{padding:9px 4px;border-bottom:1px solid light-dark(#dce5e2,#304149);text-align:left}.leaderboard td:last-child,.leaderboard th:last-child{text-align:right}.login-screen{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(7,22,12,.78);padding:18px}.login-screen.hidden{display:none}.login-box{width:min(100%,420px);padding:30px;border-radius:18px;background:#17232a;color:#fff;text-align:center;border:1px solid #304149}.login-box input{width:100%;padding:13px;border-radius:10px;border:1px solid #43515a;background:#0d1419;color:#fff;margin:12px 0}.login-box button{width:100%}.player-label{font-size:12px;color:light-dark(#65716e,#9eafaa)}
 .timer-bar { height:6px; border-radius:999px; overflow:hidden; background:light-dark(#e1e9e5,#2b3b42); }
 .timer-fill { height:100%; width:100%; border-radius:999px; background:var(--site-primary); transition:width .25s linear,background .2s; }
 .stat-value { font-size:33px; font-weight:950; letter-spacing:-.06em; margin-top:8px; }
@@ -163,6 +163,12 @@ kbd { font:inherit; font-size:11px; font-weight:800; padding:3px 6px; border:1px
   .pre-game-controls .stat-value { font-size:22px; }
   .pre-game-actions .primary-btn,.pre-game-actions .secondary-btn { padding:11px 5px; font-size:11px; }
 }
+/* Keep the pitch visible while maintaining readable game controls. */
+.hero, .topbar { text-shadow: 0 1px 12px rgba(255,255,255,.85); }
+@media (prefers-color-scheme: dark) { .hero, .topbar { text-shadow: 0 1px 12px rgba(0,0,0,.8); } }
+button { touch-action: manipulation; }
+button:active:not(:disabled) { transform: scale(.975); }
+@media (max-width: 600px) { body { background-attachment: scroll; background-size: 100% auto; background-repeat: repeat-y; } }
 </style>
 </head>
 <body>
@@ -220,6 +226,26 @@ const SUPABASE_URL = "https://bhyjevwbtlvvyehoucxt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_y8Cmj28UY-fMLy5QC448Ag_xPBlNBhc";
 const db = SUPABASE_URL.startsWith("https://") && window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY) : null;
 let nickname = "";
+const NICKNAME_STORAGE_KEY = "badgeBlitzNickname";
+function restoreNickname(){
+ try {
+  const saved = localStorage.getItem(NICKNAME_STORAGE_KEY);
+  if(saved && /^[A-Za-z0-9 _-]{2,24}$/.test(saved)){
+   nickname=saved;
+   document.getElementById("nicknameInput").value=saved;
+   document.getElementById("loginScreen").classList.add("hidden");
+  }
+ } catch(e) { /* Storage may be disabled in private browsing. */ }
+}
+// The Vibration API works on supported Android browsers; iOS Safari does not expose it.
+function hapticTap(){
+ try { if(typeof navigator.vibrate === "function") navigator.vibrate(12); } catch(e) {}
+}
+document.addEventListener("pointerdown", e => {
+ const button=e.target.closest("button");
+ if(button && !button.disabled) hapticTap();
+}, {passive:true});
+restoreNickname();
 const fortnightKey = () => Math.floor(Date.now()/1209600000); // fixed 14-day UTC periods
 async function loadLeaderboard(){
  const rows=document.getElementById("leaderboardRows");
@@ -231,7 +257,7 @@ async function loadLeaderboard(){
  data.forEach(item=>{const tr=rows.insertRow();tr.insertCell().textContent=item.nickname;tr.insertCell().textContent=item.best_score;});
 }
 async function submitScore(value){if(!db||!nickname)return;const {error}=await db.rpc("submit_badge_blitz_score",{p_nickname:nickname,p_score:value,p_period_key:fortnightKey()});if(error)console.error("Score submission failed:",error);await loadLeaderboard();}
-document.getElementById("loginForm").addEventListener("submit",e=>{e.preventDefault();const value=document.getElementById("nicknameInput").value.trim();if(!/^[A-Za-z0-9 _-]{2,24}$/.test(value)){document.getElementById("loginError").textContent="Use 2–24 letters, numbers, spaces, _ or -.";return;}nickname=value;document.getElementById("loginScreen").classList.add("hidden");loadLeaderboard();});
+document.getElementById("loginForm").addEventListener("submit",e=>{e.preventDefault();const value=document.getElementById("nicknameInput").value.trim();if(!/^[A-Za-z0-9 _-]{2,24}$/.test(value)){document.getElementById("loginError").textContent="Use 2–24 letters, numbers, spaces, _ or -.";return;}nickname=value;try{localStorage.setItem(NICKNAME_STORAGE_KEY,value);}catch(e){}document.getElementById("loginScreen").classList.add("hidden");loadLeaderboard();});
 const clubs = [
  {name:'Celta Vigo',league:'La Liga',c:['#8fd3f4','#ffffff','#d9273e'],style:'shield',motif:'cross'},
  {name:'FC Porto',league:'Other clubs',c:['#0050a4','#ffffff','#d9b45d'],style:'round',motif:'cross'},
