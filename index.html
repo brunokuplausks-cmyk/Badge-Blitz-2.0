@@ -163,12 +163,52 @@ kbd { font:inherit; font-size:11px; font-weight:800; padding:3px 6px; border:1px
   .pre-game-controls .stat-value { font-size:22px; }
   .pre-game-actions .primary-btn,.pre-game-actions .secondary-btn { padding:11px 5px; font-size:11px; }
 }
+/* White header and hero text for contrast against the grass background. */
+.topbar .brand, .hero h1, .hero .best, .hero .best span, .hero .best strong { color:#fff; }
+.topbar #headerTimer { color:#fff; border-color:rgba(255,255,255,.75); background:rgba(0,0,0,.20); }
+.topbar #headerTimer.urgent { color:#ff5252; font-weight:950; }
+.hero, .topbar { text-shadow:0 2px 8px rgba(0,0,0,.7); }
 /* Keep the pitch visible while maintaining readable game controls. */
-.hero, .topbar { text-shadow: 0 1px 12px rgba(255,255,255,.85); }
-@media (prefers-color-scheme: dark) { .hero, .topbar { text-shadow: 0 1px 12px rgba(0,0,0,.8); } }
+
+
 button { touch-action: manipulation; }
 button:active:not(:disabled) { transform: scale(.975); }
 @media (max-width: 600px) { body { background-attachment: scroll; background-size: 100% auto; background-repeat: repeat-y; } }
+/* Mobile-first sizing: keep the quiz inside the visual viewport without disabling pinch zoom. */
+html { width:100%; max-width:100%; overflow-x:clip; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body, #app { width:100%; max-width:100%; min-width:0; overflow-x:clip; }
+.shell, .game-card, .toolbar, .modes, .question-panel, .answers, .pre-game-controls { min-width:0; max-width:100%; }
+@media (max-width:600px) {
+  .shell { width:100%; padding:8px 8px 18px; }
+  .topbar { min-width:0; gap:8px; margin-bottom:9px; }
+  .brand { min-width:0; gap:6px; font-size:clamp(15px,4.4vw,19px); }
+  .brand span { overflow-wrap:anywhere; }
+  .brand-mark { flex:0 0 30px; width:30px; height:30px; }
+  .topbar .pill { flex:0 0 auto; }
+  .hero { min-width:0; gap:8px; }
+  h1 { font-size:clamp(27px,8vw,38px); }
+  .game-card { width:100%; padding:9px; }
+  .toolbar { width:100%; margin-bottom:9px; }
+  .modes { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; padding:4px; }
+  .mode { min-width:0; padding:10px 3px; font-size:clamp(9px,2.7vw,12px); line-height:1.2; white-space:normal; }
+  .pre-game-controls { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .pre-game-actions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .pre-game-actions button { min-width:0; white-space:normal; }
+  .crest { width:min(45vw,190px); height:min(45vw,190px); }
+  .answers { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+  .answer { min-width:0; padding:9px 7px; gap:6px; min-height:58px; }
+  .answer-name { min-width:0; overflow-wrap:anywhere; word-break:normal; font-size:clamp(11px,3vw,14px); }
+  .leaderboard { padding:10px; max-width:100%; overflow-x:auto; }
+  .login-box { max-width:100%; padding:22px 16px; }
+  .login-box input { min-width:0; font-size:16px; }
+}
+@media (max-width:350px) {
+  .shell { padding-left:5px; padding-right:5px; }
+  .game-card { padding:6px; }
+  .mode { font-size:9px; padding:9px 2px; }
+  .answer { padding:7px 5px; }
+  .key { width:20px; flex-basis:20px; height:22px; }
+}
 </style>
 </head>
 <body>
