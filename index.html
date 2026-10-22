@@ -216,8 +216,8 @@ kbd { font:inherit; font-size:11px; font-weight:800; padding:3px 6px; border:1px
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // Add your Supabase project URL and publishable/anon key below. Never use a service_role key.
-const SUPABASE_URL = "PASTE_YOUR_SUPABASE_PROJECT_URL";
-const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY";
+const SUPABASE_URL = "https://bhyjevwbtlvvyehoucxt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_y8Cmj28UY-fMLy5QC448Ag_xPBlNBhc";
 const db = SUPABASE_URL.startsWith("https://") && window.supabase ? window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY) : null;
 let nickname = "";
 const fortnightKey = () => Math.floor(Date.now()/1209600000); // fixed 14-day UTC periods
