@@ -42,7 +42,6 @@ h1 { margin:0; font-family:var(--site-font-heading); font-size:clamp(32px,7vw,58
 .modes { display:flex; gap:6px; padding:5px; background:light-dark(#edf2f0,#0c1419); border-radius:14px; flex-wrap:wrap; }
 .mode { border:0; border-radius:10px; background:transparent; color:light-dark(#65716e,#9aa9a7); padding:10px 13px; font-size:12px; font-weight:800; cursor:pointer; transition:.15s; }
 .mode.active { background:var(--site-primary); color:var(--site-on-primary); box-shadow:0 3px 10px rgba(25,214,160,.2); }
-.league { display:flex; align-items:center; gap:8px; color:light-dark(#6c7975,#9aa9a7); font-size:12px; font-weight:700; }
 select { border:1px solid light-dark(#d9e3df,#304149); border-radius:10px; padding:9px 12px; background:light-dark(#fff,#18242c); color:inherit; font:inherit; font-size:12px; outline-offset:3px; }
 .play-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; }
 .side-panel { display:none; }
@@ -184,7 +183,6 @@ kbd { font:inherit; font-size:11px; font-weight:800; padding:3px 6px; border:1px
           <button class="mode" data-mode="nations">National teams</button>
           <button class="mode active" data-mode="mixed">Mixed game</button>
         </div>
-        <label class="league">League <select id="leagueFilter" aria-label="League filter"><option value="all">All leagues + extra clubs</option><option value="Premier League">Premier League</option><option value="La Liga">La Liga</option><option value="Bundesliga">Bundesliga</option><option value="Serie A">Serie A</option><option value="Ligue 1">Ligue 1</option><option value="Other clubs">Other clubs</option></select></label>
       </div>
       <div class="pre-game-controls" aria-label="Game status and controls">
         <div class="stat-card"><div class="stat-head"><span>Score</span><span>✓</span></div><div class="stat-value" id="score">0</div><div class="stat-caption">points scored</div></div>
@@ -920,15 +918,14 @@ function crestSvg(team) {
  return svgWrap(`<defs><clipPath id="clip"><circle cx="100" cy="105" r="${team.style==='round'?58:52}"/></clipPath></defs>${body}${detail}<g>${motif}</g><path d="M44 34 L156 34" stroke="${c}" stroke-width="3" opacity=".7"/>`);
 }
 function eligiblePool(){
- const filter=$('leagueFilter').value;
  if(mode==='nations') return nations.filter(t=>badgeImages[t.name]);
- if(mode==='clubs') return clubs.filter(t=>badgeImages[t.name]&&(filter==='all'||t.league===filter));
- return [...clubs.filter(t=>badgeImages[t.name]&&(filter==='all'||t.league===filter)),...nations.filter(t=>badgeImages[t.name])];
+ if(mode==='clubs') return clubs.filter(t=>badgeImages[t.name]);
+ return [...clubs.filter(t=>badgeImages[t.name]),...nations.filter(t=>badgeImages[t.name])];
 }
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 function makeQuestion(){
  let pool=eligiblePool();
- if(pool.length<4){$('feedback').textContent='Choose a league with at least four clubs.';return;}
+ if(pool.length<4){$('feedback').textContent='Not enough badges available for this mode.';return;}
  if(!deck.length) deck=shuffle(pool.slice());
  current=deck.pop();
  let wrongPool=pool.filter(t=>t.name!==current.name);
@@ -952,8 +949,7 @@ function endGame(){running=false;clearInterval(ticker);clearTimeout(nextTimeout)
 function startGame(){clearInterval(ticker);clearTimeout(nextTimeout);$('overlay').classList.remove('show');score=0;streak=0;seconds=60;question=0;running=true;answered=false;deck=[];$('startBtn').textContent='Game in progress…';$('startBtn').disabled=true;renderStats();makeQuestion();const deadline=performance.now()+60000;ticker=setInterval(()=>{if(!running)return;seconds=Math.max(0,Math.ceil((deadline-performance.now())/1000));renderStats();if(seconds<=0)endGame();},100);}
 function resetGame(){clearInterval(ticker);clearTimeout(nextTimeout);running=false;answered=false;score=0;streak=0;seconds=60;question=0;deck=[];current=null;$('overlay').classList.remove('show');$('startBtn').disabled=false;$('startBtn').textContent='Start game ↗';$('timer').textContent='60s';$('headerTimer').textContent='60s';$('headerTimer').classList.remove('urgent');$('timerFill').style.width='100%';$('timerFill').style.background='var(--site-primary)';$('timer').classList.remove('urgent');$('score').textContent='0';$('streak').textContent='0';$('questionNum').textContent='—';$('roundLabel').textContent='Name that badge';$('crest').innerHTML='';$('answers').innerHTML='<button class="answer" disabled><span class="key">1</span><span class="answer-name">Ready when you are</span></button><button class="answer" disabled><span class="key">2</span><span class="answer-name">Four options</span></button><button class="answer" disabled><span class="key">3</span><span class="answer-name">One correct answer</span></button><button class="answer" disabled><span class="key">4</span><span class="answer-name">Beat the clock</span></button>';$('feedback').textContent='Ready?';$('feedback').className='feedback';$('startBtn').disabled=false;}
 $('startBtn').addEventListener('click',startGame);$('resetBtn').addEventListener('click',resetGame);$('playAgain').addEventListener('click',startGame);
-document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=>{if(running)return;document.querySelectorAll('.mode').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=btn.dataset.mode;$('leagueFilter').disabled=mode==='nations';$('leagueFilter').style.opacity=mode==='nations'?'.45':'1';resetGame();}));
-$('leagueFilter').addEventListener('change',()=>{if(!running)resetGame();});
+document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=>{if(running)return;document.querySelectorAll('.mode').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=btn.dataset.mode;resetGame();}));
 document.addEventListener('keydown',e=>{if(!running||answered||!['1','2','3','4'].includes(e.key))return;const btn=$('answers').querySelectorAll('button')[Number(e.key)-1];if(btn&&!btn.disabled)btn.click();});
 resetGame();loadLeaderboard();
 </script>
